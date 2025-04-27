@@ -1,52 +1,51 @@
 // app.js
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import cors from 'cors';
+import express from 'express'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+import cors from 'cors'
 
-const app = express();
-const prisma = new PrismaClient();
+const app = express()
+const prisma = new PrismaClient()
 
 // Middleware to enable CORS for your frontend
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: 'http://localhost:5173' }))
 
 // Middleware for JSON parsing
-app.use(express.json());
+app.use(express.json())
 
 // Route to handle user login
 app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body
 
   try {
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email },
-    });
+      where: { email }
+    })
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' })
     }
 
     // Compare the provided password with the hashed password in DB
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' })
     }
 
     // Login successful, return user data or a success message
-    res.status(200).json({ message: 'Login successful', userId: user.id });
-
+    res.status(200).json({ message: 'Login successful', userId: user.id })
   } catch (err) {
-    console.error('Error during login: ', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error during login: ', err)
+    res.status(500).json({ error: 'Internal server error' })
   }
-});
+})
 
 // Example health check route
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'API is running successfully.' });
-});
+  res.status(200).json({ message: 'API is running successfully.' })
+})
 
 // Export the app to be used in server.js
-export default app;
+export default app
