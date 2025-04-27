@@ -1,9 +1,10 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-exports.register = async (req, res) => {
+const prisma = new PrismaClient();
+
+export const register = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -28,7 +29,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -46,7 +47,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.googleLogin = async (req, res) => {
+export const googleLogin = async (req, res) => {
   try {
     // Mock Google OAuth integration
     res.json({ message: "Google login successful (placeholder)" });
