@@ -1,4 +1,4 @@
-// server.cjs
+// server.js
 import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
@@ -19,7 +19,6 @@ const prisma = new PrismaClient()
 
 // Test database connection on server start
 try {
-  // eslint-disable-next-line prettier/prettier
   await prisma.$connect()
   console.log('Connected to the database successfully!')
 } catch (err) {

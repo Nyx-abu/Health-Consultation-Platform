@@ -47,5 +47,5 @@ app.get('/', (req, res) => {
   res.status(200).json({ message: 'API is running successfully.' })
 })
 
-// Export the app to be used in server.cjs
+// Export the app to be used in server.js
 export default app
