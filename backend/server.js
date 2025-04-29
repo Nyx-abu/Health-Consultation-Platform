@@ -1,56 +1,49 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const app = require('./app.js');
-const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config(); // Load environment variables from .env
 
 const server = express();
-
-// Middleware setup
-server.use(cors());
-server.use(express.json());
-
 const prisma = new PrismaClient();
 
-prisma
-  .$connect()
+// Middleware setup
+server.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
+server.use(express.json());
+
+// Connect to database
+prisma.$connect()
   .then(() => console.log('Connected to the database successfully!'))
   .catch((err) => {
     console.error('Database connection failed: ', err);
     process.exit(1);
   });
 
-server.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
+// Public routes
+server.use('/api/auth', authRoutes);
 
-  try {
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: email },
-    });
+// Protected routes
+server.use('/api/user', userRoutes);    // User-level protected routes
+server.use('/api/admin', adminRoutes);  // Admin-level protected routes
 
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    res.status(200).json({ message: 'Login successful', userId: user.id });
-  } catch (err) {
-    console.error('Error during login: ', err);
-    res.status(500).json({ error: 'An error occurred during login' });
-  }
+// Health check route
+server.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
-server.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
+// Start server
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
-server.use('/api', app);
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  await prisma.$disconnect();
+  process.exit(0);
+});
